@@ -1,0 +1,12 @@
+[DEFAULT]
+
+[xmpp]
+jid = bot@yourjabber.org
+password = supersecretpassword
+resource = ollama
+
+[ollama]
+model = mistral
+url = http://localhost:11434
+
+

@@ -8,11 +8,19 @@ import requests
 import json
 
 
-class OllamaBot(ClientXMPP):
+class Conversation():
+    """ Todo """
+    def __init__(self, jid):
+        self.jid = jid
+        self.messages = []
 
+
+class OllamaBot(ClientXMPP):
     def __init__(self, jid, password, ollama_url, model):
         ClientXMPP.__init__(self, jid, password)
         self.context = []
+        self.conversations = {}
+        self.messages = []
         self.model = model
         self.ollama_url = ollama_url
         self.add_event_handler("session_start", self.session_start)
@@ -22,41 +30,76 @@ class OllamaBot(ClientXMPP):
         self.send_presence()
         self.get_roster()
 
-    def message(self, msg):
-        URL = f"{self.ollama_url}/api/generate"
+    def reset(self):
+        self.context = []
+        self.messages = []
+        return "SYSTEM: Context reset: start a new conversation."
 
+    def chat(self, user_msg, jid=False):
+        URL = f"{self.ollama_url}/api/chat"
+        self.messages.append({"role": "user", "content": user_msg})
+        query = {
+            "model": self.model,
+            "messages": self.messages,
+            "stream": False
+        }
+        r = requests.post(URL, data=json.dumps(query))
+        self.messages.append(r.json()['message'])
+        # print(f'\n{self.messages}\n')
+        return r.json()['message']['content']
+
+    def generate(self, user_msg):
+        """ Deprecated - use chat() """
+        URL = f"{self.ollama_url}/api/generate"
+        query = {
+            "model": self.model,
+            "prompt": user_msg,
+            "context": self.context,
+            "stream": False
+        }
+        r = requests.post(URL, data=json.dumps(query))
+        self.context = r.json()['context']
+        return r.json()['response']
+
+    def message(self, msg):
         if msg['type'] in ('chat', 'normal'):
+            # user = msg['from'].split('/')[0]
             if msg['body'].startswith('%'):
                 reply = self.command(msg['body'][1:])
             else:
-                query = {
-                    "model": self.model,
-                    "prompt": f"{msg['body']}",
-                    "context": self.context,
-                    "stream": False
-                }
-                r = requests.post(URL, data=json.dumps(query))
-                self.context = r.json()['context']
-                reply = r.json()['response']
+                reply = self.chat(f"{msg['body']}")
             msg.reply(reply).send()
+
+    def get_local_models(self):
+        URL = f"{self.ollama_url}/api/tags"
+        r = requests.get(URL)
+        models = r.json()['models']
+        model_list = [x['name'] for x in models]
+        return model_list
 
     def command(self, cmd):
         # this is very simple
         args = cmd.split()
         if args[0] == 'reset':
-            self.context = []
-            reply = "SYSTEM: Context reseted"
+            reply = self.reset()
+        elif args[0] == 'list':
+            reply = "SYSTEMS: Available models:\n"
+            for m in self.get_local_models():
+                if m.split(':')[1] != 'latest':
+                    reply += f"* {m}\n"
+                else:
+                    reply += f"* {m.split(':')[0]}\n"
         elif args[0] == 'model':
             if len(args) >= 2:
                 self.model = args[1]
-                self.context = []
-                reply = f"SYSTEM: Model set to {self.model} (this includes a context reset)."  # noqa: E501
+                reply = f"SYSTEM: Model set to {self.model} (keep conversation)."  # noqa: E501
             else:
                 reply = f"SYSTEM: Current model: {self.model}"
         elif args[0] == 'help':
             reply = """
 SYSTEM: %help - this help
         %reset - reset context (new conversation)
+        %list - list locally available models
         %model - show currently used model
         %model <name> - switch to other model
 """

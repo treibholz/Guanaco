@@ -4,6 +4,10 @@ A simple XMPP bot for [Ollama](https://github.com/jmorganca/ollama).
 Disclaimer: This is not craftmanship, but tinkering for fun. Documentation
 might be wrong, out-of-date and incomplete. RTFS if in doubt.
 
+## Requirements
+
+* ollama >= v0.1.14
+
 ## Configuration
 
 ```ini

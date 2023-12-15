@@ -1,4 +1,5 @@
 [DEFAULT]
+admin = you@yourjabber.org
 
 [xmpp]
 jid = bot@yourjabber.org

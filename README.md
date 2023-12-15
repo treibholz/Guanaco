@@ -2,7 +2,8 @@
 A simple XMPP bot for [Ollama](https://github.com/jmorganca/ollama).
 
 Disclaimer: This is not craftmanship, but tinkering for fun. Documentation
-might be wrong, out-of-date and incomplete. RTFS if in doubt.
+might be wrong, out-of-date, incomplete and maybe even insulting. RTFS if in
+doubt.
 
 ## Requirements
 
@@ -12,6 +13,7 @@ might be wrong, out-of-date and incomplete. RTFS if in doubt.
 
 ```ini
 [DEFAULT]
+admin = you@yourjabber.org
 
 [xmpp]
 jid = bot@yourjabber.org

@@ -32,6 +32,8 @@ class Conversations():
         json.dump(self.messages, open(self.filename, 'w'), indent=2)
 
 
+#############################################################################
+
 class BotCommands():
     def __init__(self, bot):
         self.b = bot
@@ -84,6 +86,8 @@ class BotCommands():
             reply = f"{self.pre} Current model: {self.b.model}"
         return reply
 
+
+#############################################################################
 
 class OllamaBot(ClientXMPP):
     def __init__(self, jid, password, ollama_url, model, admin):
@@ -146,6 +150,8 @@ class OllamaBot(ClientXMPP):
             reply = self.CMD.help(True)
         return reply
 
+
+#############################################################################
 
 if __name__ == '__main__':
     config = configparser.ConfigParser()
